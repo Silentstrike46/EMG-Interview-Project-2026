@@ -1,7 +1,10 @@
 from collections.abc import Iterator
+from datetime import datetime
+from typing import Any, ClassVar
 
-from sqlalchemy import MetaData, create_engine
+from sqlalchemy import DateTime, MetaData, create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.types import TypeEngine
 
 from backend.config import settings
 
@@ -18,6 +21,10 @@ NAMING_CONVENTION = {
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
+    # Ensure timezone aware by default
+    type_annotation_map: ClassVar[dict[Any, TypeEngine[Any]]] = {
+        datetime: DateTime(timezone=True)
+    }
 
 
 engine = create_engine(settings.database_url)

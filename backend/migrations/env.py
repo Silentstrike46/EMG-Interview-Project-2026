@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import create_engine, pool
 
 from backend.config import settings
-from backend.db import Base
+from backend.models import Base
 
 config = context.config
 
@@ -13,8 +13,6 @@ if config.config_file_name is not None:
     # test suite migrates in-process); the default would silently disable them.
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
-# TODO: import the models package here once it exists, so every table is
-# registered on Base.metadata before autogenerate compares against it.
 target_metadata = Base.metadata
 
 
