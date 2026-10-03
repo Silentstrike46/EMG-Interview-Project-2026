@@ -26,7 +26,7 @@ Shortcuts: `make up` (starts in the background and waits until the API is health
 make test
 ```
 
-This runs the test suite in a container against its own throwaway Postgres, then removes the test containers. It fails if any test fails.
+This runs the test suite in a container against its own throwaway Postgres, then removes the test containers. A running `docker compose up` stack is left untouched. It fails if any test fails.
 
 Without `make`:
 
@@ -34,4 +34,4 @@ Without `make`:
 docker compose run --build --rm test
 ```
 
-This leaves the test database container running; remove it with `docker compose --profile test down`.
+This leaves the test database container running; remove it with `docker compose rm --stop --force db-test`.

@@ -6,9 +6,10 @@ up:
 down:
 	docker compose --profile test down
 
-# Removes the test containers afterwards, but still fails if pytest fails.
+# Removes only the test database afterwards (the test container goes via --rm),
+# leaving a running dev stack alone. Still fails if pytest fails.
 test:
-	docker compose run --build --rm test; status=$$?; docker compose --profile test down; exit $$status
+	docker compose run --build --rm test; status=$$?; docker compose rm --stop --force db-test; exit $$status
 
 logs:
 	docker compose logs -f
