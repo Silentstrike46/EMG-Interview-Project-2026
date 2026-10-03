@@ -1,14 +1,12 @@
-.PHONY: format test run
+.PHONY: format lint typecheck
 
 format:
 	uv run ruff check --fix .
 	uv run ruff format .
 
-test:
-	uv run pytest
-
-run:
-	uv run uvicorn backend.main:app --reload
+lint:
+	uv run ruff check .
+	uv run ruff format --check .
 
 typecheck:
 	uv run mypy
