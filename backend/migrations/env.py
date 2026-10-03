@@ -9,7 +9,9 @@ from backend.db import Base
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # Keep loggers created before migrations run (e.g. by the app, when the
+    # test suite migrates in-process); the default would silently disable them.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # TODO: import the models package here once it exists, so every table is
 # registered on Base.metadata before autogenerate compares against it.
