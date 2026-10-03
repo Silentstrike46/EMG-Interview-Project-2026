@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Local environment overrides (compose provides defaults; nothing here is required)
+.env
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
