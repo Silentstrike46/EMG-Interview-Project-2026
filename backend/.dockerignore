@@ -1,0 +1,13 @@
+# Keep the build context to just what the images need (see Dockerfile).
+*
+
+!pyproject.toml
+!uv.lock
+!src
+!alembic.ini
+!migrations
+!tests
+
+# Even within the kept paths, never ship caches or bytecode.
+**/__pycache__
+**/*.py[cod]

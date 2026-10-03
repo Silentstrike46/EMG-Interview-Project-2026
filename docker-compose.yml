@@ -1,0 +1,91 @@
+# Fixed project name, so container and volume names do not depend on the
+# directory the repo was cloned into.
+name: emg
+
+x-backend: &backend
+  build:
+    context: ./backend
+    target: runtime
+  image: emg-backend
+  environment:
+    DATABASE_URL: postgresql+psycopg://emg:emg@db:5432/emg
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: emg
+      POSTGRES_PASSWORD: emg
+      POSTGRES_DB: emg
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Check over TCP, not the socket: on first start Postgres runs a
+      # temporary socket-only server during init, which would pass too early.
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "emg", "-d", "emg"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  migrate:
+    <<: *backend
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    <<: *backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Test services only start under the "test" profile, on their own network:
+  # the test container cannot even resolve the dev database.
+  db-test:
+    image: postgres:17
+    profiles: [test]
+    networks: [test]
+    environment:
+      POSTGRES_USER: emg
+      POSTGRES_PASSWORD: emg
+      POSTGRES_DB: emg_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "emg", "-d", "emg_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  test:
+    build:
+      context: ./backend
+      target: test
+    image: emg-backend-test
+    profiles: [test]
+    networks: [test]
+    environment:
+      DATABASE_URL: postgresql+psycopg://emg:emg@db-test:5432/emg_test
+    depends_on:
+      db-test:
+        condition: service_healthy
+
+networks:
+  default:
+  test:
+
+volumes:
+  pgdata:
